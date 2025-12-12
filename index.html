@@ -366,6 +366,11 @@
         }
 
         function drawCard(deck) {
+            if (deck.length === 0) {
+                console.warn('Deck is empty! Reshuffling...');
+                const newDeck = shuffle(createDeck());
+                deck.push(...newDeck);
+            }
             return deck.pop();
         }
 
