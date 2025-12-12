@@ -543,6 +543,15 @@
             statusDiv.className = type ? type : '';
         }
 
+        // ========== 輔助函式 ==========
+        function getBustLimit() {
+            return gameState.gameMode === 'tenhalf' ? 10.5 : 21;
+        }
+
+        function getDealerStandLimit() {
+            return gameState.gameMode === 'tenhalf' ? 7.5 : 17;
+        }
+
         // ========== 遊戲流程 ==========
         function newGame() {
             // 建立並洗牌
@@ -559,8 +568,7 @@
             gameState.state = 'playerTurn';
             
             const playerValue = handValue(gameState.playerHand);
-            const bustLimit = gameState.gameMode === 'tenhalf' ? 10.5 : 21;
-            const targetScore = bustLimit;
+            const bustLimit = getBustLimit();
 
             // 檢查玩家是否已經爆牌
             if (playerValue.total > bustLimit) {
@@ -575,7 +583,7 @@
             render();
 
             // 檢查玩家是否直接達到目標點數
-            if (playerValue.total === targetScore) {
+            if (playerValue.total === bustLimit) {
                 const modeName = gameState.gameMode === 'tenhalf' ? '10點半' : 'Blackjack';
                 setStatus(`玩家 ${modeName}！自動停牌`, 'win');
                 setTimeout(stand, 1000);
@@ -589,16 +597,15 @@
             gameState.playerHand.push(drawCard(gameState.deck));
             
             const playerValue = handValue(gameState.playerHand);
-            const bustLimit = gameState.gameMode === 'tenhalf' ? 10.5 : 21;
-            const targetScore = bustLimit;
+            const bustLimit = getBustLimit();
             
             if (playerValue.total > bustLimit) {
                 // 爆牌
                 gameState.state = 'roundOver';
                 gameState.stats.losses++;
                 setStatus(`玩家爆牌 (${playerValue.total} 點)！莊家獲勝`, 'lose');
-            } else if (playerValue.total === targetScore) {
-                setStatus(`玩家 ${targetScore} 點！自動停牌`, 'win');
+            } else if (playerValue.total === bustLimit) {
+                setStatus(`玩家 ${bustLimit} 點！自動停牌`, 'win');
                 setTimeout(stand, 1000);
             } else {
                 setStatus(`玩家點數: ${playerValue.total} - 繼續要牌或停牌？`);
@@ -624,8 +631,8 @@
             let dealerValue = handValue(gameState.dealerHand);
             
             // 莊家規則依遊戲模式而定
-            const dealerStandLimit = gameState.gameMode === 'tenhalf' ? 7.5 : 17;
-            const bustLimit = gameState.gameMode === 'tenhalf' ? 10.5 : 21;
+            const dealerStandLimit = getDealerStandLimit();
+            const bustLimit = getBustLimit();
 
             // 莊家規則：低於限制必須要牌
             while (dealerValue.total < dealerStandLimit && dealerValue.total <= bustLimit) {
@@ -643,7 +650,7 @@
         function resolveRound() {
             const playerValue = handValue(gameState.playerHand);
             const dealerValue = handValue(gameState.dealerHand);
-            const bustLimit = gameState.gameMode === 'tenhalf' ? 10.5 : 21;
+            const bustLimit = getBustLimit();
 
             gameState.state = 'roundOver';
 
