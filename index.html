@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Microsoft JhengHei', 'PingFang TC', 'Noto Sans TC', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -32,7 +32,7 @@
 
         h1 {
             text-align: center;
-            color: #667eea;
+            color: #27ae60;
             margin-bottom: 10px;
             font-size: 2em;
         }
@@ -67,14 +67,34 @@
         }
 
         select:hover, select:focus {
-            border-color: #667eea;
+            border-color: #27ae60;
             outline: none;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Microsoft JhengHei', 'PingFang TC', 'Noto Sans TC', sans-serif;
+            transition: border-color 0.3s;
+            resize: vertical;
+        }
+
+        input[type="text"]:hover, input[type="text"]:focus, textarea:hover, textarea:focus {
+            border-color: #27ae60;
+            outline: none;
+        }
+
+        textarea {
+            min-height: 80px;
         }
 
         .draw-button {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -87,7 +107,7 @@
 
         .draw-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
         }
 
         .draw-button:active {
@@ -147,7 +167,7 @@
         .card-position {
             text-align: center;
             font-size: 1.1em;
-            color: #667eea;
+            color: #27ae60;
             margin-bottom: 20px;
             font-weight: bold;
         }
@@ -161,7 +181,7 @@
 
         .meaning-title {
             font-weight: bold;
-            color: #667eea;
+            color: #27ae60;
             margin-bottom: 8px;
         }
 
@@ -178,7 +198,7 @@
 
         .advice-title {
             font-weight: bold;
-            color: #764ba2;
+            color: #27ae60;
             margin-bottom: 8px;
         }
 
@@ -191,8 +211,8 @@
             width: 100%;
             padding: 12px;
             background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
+            color: #27ae60;
+            border: 2px solid #27ae60;
             border-radius: 8px;
             font-size: 16px;
             font-weight: bold;
@@ -202,8 +222,58 @@
         }
 
         .reset-button:hover {
-            background: #667eea;
+            background: #27ae60;
             color: white;
+        }
+
+        .cards-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .card-item {
+            flex: 1;
+            min-width: 150px;
+            max-width: 200px;
+        }
+
+        .card-item .card-visual {
+            width: 100%;
+            height: 200px;
+            margin: 0 auto 10px;
+        }
+
+        .card-item .card-name {
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+
+        .card-item .card-position {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .question-display {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .question-label {
+            font-weight: bold;
+            color: #27ae60;
+            margin-bottom: 8px;
+        }
+
+        .question-text {
+            color: #555;
+            line-height: 1.6;
+            font-style: italic;
         }
 
         @media (max-width: 600px) {
@@ -219,6 +289,15 @@
                 width: 120px;
                 height: 200px;
                 font-size: 2.5em;
+            }
+
+            .cards-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .card-item {
+                max-width: 150px;
             }
         }
     </style>
@@ -239,15 +318,25 @@
             </select>
         </div>
 
-        <button class="draw-button" id="drawButton">🎴 抽一張牌</button>
+        <div class="input-section">
+            <label for="question">你的問題（可選）：</label>
+            <textarea id="question" placeholder="請輸入你想詢問的問題..."></textarea>
+        </div>
+
+        <button class="draw-button" id="drawButton">🎴 抽三張牌</button>
 
         <div class="result-area" id="resultArea">
-            <div class="card-visual" id="cardVisual">🃏</div>
-            <div class="card-name" id="cardName"></div>
-            <div class="card-position" id="cardPosition"></div>
+            <div class="question-display" id="questionDisplay" style="display: none;">
+                <div class="question-label">你的問題：</div>
+                <div class="question-text" id="questionText"></div>
+            </div>
+
+            <div class="cards-container" id="cardsContainer">
+                <!-- Cards will be dynamically inserted here -->
+            </div>
             
             <div class="card-meaning">
-                <div class="meaning-title">牌義：</div>
+                <div class="meaning-title">整體牌義：</div>
                 <div class="meaning-text" id="meaningText"></div>
             </div>
 
@@ -445,54 +534,108 @@
 
         // DOM 元素
         const topicSelect = document.getElementById('topic');
+        const questionInput = document.getElementById('question');
         const drawButton = document.getElementById('drawButton');
         const resultArea = document.getElementById('resultArea');
-        const cardVisual = document.getElementById('cardVisual');
-        const cardName = document.getElementById('cardName');
-        const cardPosition = document.getElementById('cardPosition');
+        const cardsContainer = document.getElementById('cardsContainer');
+        const questionDisplay = document.getElementById('questionDisplay');
+        const questionText = document.getElementById('questionText');
         const meaningText = document.getElementById('meaningText');
         const adviceText = document.getElementById('adviceText');
         const resetButton = document.getElementById('resetButton');
 
-        // 抽牌功能
+        // 抽牌功能 - 改為抽三張牌
         function drawCard() {
-            // 隨機選擇一張牌
-            const randomIndex = Math.floor(Math.random() * tarotCards.length);
-            const card = tarotCards[randomIndex];
+            const drawnCards = [];
+            const usedIndices = new Set();
             
-            // 隨機決定正位或逆位（50/50）
-            const isReversed = Math.random() < 0.5;
+            // 隨機抽取三張不重複的牌
+            while (drawnCards.length < 3) {
+                const randomIndex = Math.floor(Math.random() * tarotCards.length);
+                if (!usedIndices.has(randomIndex)) {
+                    usedIndices.add(randomIndex);
+                    const card = tarotCards[randomIndex];
+                    const isReversed = Math.random() < 0.5;
+                    drawnCards.push({ card, isReversed });
+                }
+            }
             
-            // 獲取選擇的主題
+            // 獲取選擇的主題和問題
             const topic = topicSelect.value;
+            const question = questionInput.value.trim();
             
             // 顯示結果
-            displayResult(card, isReversed, topic);
+            displayResult(drawnCards, topic, question);
         }
 
         // 顯示抽牌結果
-        function displayResult(card, isReversed, topic) {
-            // 更新卡片視覺效果
-            cardVisual.textContent = card.symbol;
-            if (isReversed) {
-                cardVisual.classList.add('reversed');
+        function displayResult(drawnCards, topic, question) {
+            // 清空卡片容器
+            cardsContainer.innerHTML = '';
+            
+            // 顯示問題（如果有輸入）
+            if (question) {
+                questionText.textContent = question;
+                questionDisplay.style.display = 'block';
             } else {
-                cardVisual.classList.remove('reversed');
+                questionDisplay.style.display = 'none';
             }
-
-            // 更新卡片名稱
-            cardName.textContent = card.name;
-
-            // 更新正逆位
-            cardPosition.textContent = isReversed ? '🔻 逆位 (Reversed)' : '🔺 正位 (Upright)';
-
-            // 更新牌義
-            meaningText.textContent = isReversed ? card.reversedMeaning : card.uprightMeaning;
-
-            // 更新主題建議
+            
+            // 創建三張牌的顯示
+            const cardPositions = ['過去/原因', '現在/狀況', '未來/建議'];
+            drawnCards.forEach((item, index) => {
+                const { card, isReversed } = item;
+                
+                const cardItem = document.createElement('div');
+                cardItem.className = 'card-item';
+                
+                const cardVisual = document.createElement('div');
+                cardVisual.className = 'card-visual';
+                if (isReversed) {
+                    cardVisual.classList.add('reversed');
+                }
+                cardVisual.textContent = card.symbol;
+                
+                const cardName = document.createElement('div');
+                cardName.className = 'card-name';
+                cardName.textContent = card.name;
+                
+                const cardPosition = document.createElement('div');
+                cardPosition.className = 'card-position';
+                cardPosition.textContent = isReversed ? '🔻 逆位' : '🔺 正位';
+                
+                const cardLabel = document.createElement('div');
+                cardLabel.style.textAlign = 'center';
+                cardLabel.style.fontWeight = 'bold';
+                cardLabel.style.color = '#27ae60';
+                cardLabel.style.fontSize = '0.9em';
+                cardLabel.style.marginBottom = '10px';
+                cardLabel.textContent = cardPositions[index];
+                
+                cardItem.appendChild(cardLabel);
+                cardItem.appendChild(cardVisual);
+                cardItem.appendChild(cardName);
+                cardItem.appendChild(cardPosition);
+                
+                cardsContainer.appendChild(cardItem);
+            });
+            
+            // 整合三張牌的牌義
+            let combinedMeaning = '';
+            drawnCards.forEach((item, index) => {
+                const { card, isReversed } = item;
+                const meaning = isReversed ? card.reversedMeaning : card.uprightMeaning;
+                combinedMeaning += `${cardPositions[index]}：${meaning}\n\n`;
+            });
+            meaningText.textContent = combinedMeaning.trim();
+            
+            // 根據主題顯示建議
             const advice = topicAdvice[topic];
-            adviceText.textContent = isReversed ? advice.reversed : advice.upright;
-
+            // 根據多數牌的正逆位決定建議方向
+            const reversedCount = drawnCards.filter(item => item.isReversed).length;
+            const isMainlyReversed = reversedCount >= 2;
+            adviceText.textContent = isMainlyReversed ? advice.reversed : advice.upright;
+            
             // 顯示結果區域
             resultArea.classList.add('show');
         }
@@ -500,6 +643,7 @@
         // 重置功能
         function resetResult() {
             resultArea.classList.remove('show');
+            questionInput.value = '';
         }
 
         // 事件監聽
