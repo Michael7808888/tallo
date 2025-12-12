@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>塔羅牌隨機抽牌</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        select:hover, select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .draw-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 30px;
+        }
+
+        .draw-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .draw-button:active {
+            transform: translateY(0);
+        }
+
+        .result-area {
+            display: none;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .result-area.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-visual {
+            width: 150px;
+            height: 250px;
+            margin: 0 auto 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            position: relative;
+        }
+
+        .card-visual.reversed {
+            transform: rotate(180deg);
+        }
+
+        .card-name {
+            text-align: center;
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .card-position {
+            text-align: center;
+            font-size: 1.1em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .card-meaning {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .meaning-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .meaning-text {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .topic-advice {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .advice-title {
+            font-weight: bold;
+            color: #764ba2;
+            margin-bottom: 8px;
+        }
+
+        .advice-text {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .reset-button {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        .reset-button:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .card-visual {
+                width: 120px;
+                height: 200px;
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 塔羅牌隨機抽牌</h1>
+        <p class="subtitle">選擇主題，點擊抽牌，探索命運的指引</p>
+
+        <div class="input-section">
+            <label for="topic">選擇占卜主題：</label>
+            <select id="topic">
+                <option value="general">一般運勢</option>
+                <option value="love">感情愛情</option>
+                <option value="career">工作事業</option>
+                <option value="study">學業考試</option>
+                <option value="money">金錢財運</option>
+            </select>
+        </div>
+
+        <button class="draw-button" id="drawButton">🎴 抽一張牌</button>
+
+        <div class="result-area" id="resultArea">
+            <div class="card-visual" id="cardVisual">🃏</div>
+            <div class="card-name" id="cardName"></div>
+            <div class="card-position" id="cardPosition"></div>
+            
+            <div class="card-meaning">
+                <div class="meaning-title">牌義：</div>
+                <div class="meaning-text" id="meaningText"></div>
+            </div>
+
+            <div class="topic-advice">
+                <div class="advice-title">主題建議：</div>
+                <div class="advice-text" id="adviceText"></div>
+            </div>
+
+            <button class="reset-button" id="resetButton">🔄 重新抽牌</button>
+        </div>
+    </div>
+
+    <script>
+        // 塔羅牌資料庫（22 張大阿爾克那牌）
+        const tarotCards = [
+            {
+                id: 0,
+                name: "愚者 The Fool",
+                uprightMeaning: "新的開始、自由、天真、冒險精神。代表著無限的可能性與純粹的潛能。",
+                reversedMeaning: "魯莽、缺乏計劃、盲目冒險。需要更謹慎地思考行動。",
+                symbol: "🌟"
+            },
+            {
+                id: 1,
+                name: "魔術師 The Magician",
+                uprightMeaning: "創造力、技能、資源運用、行動力。擁有實現目標所需的一切工具。",
+                reversedMeaning: "操控、欺騙、才能被浪費。需要更真誠地運用能力。",
+                symbol: "🎩"
+            },
+            {
+                id: 2,
+                name: "女祭司 The High Priestess",
+                uprightMeaning: "直覺、內在智慧、神秘、潛意識。傾聽內心的聲音，相信直覺。",
+                reversedMeaning: "隱藏秘密、直覺被忽視、內在衝突。需要更深入探索內心。",
+                symbol: "🌙"
+            },
+            {
+                id: 3,
+                name: "皇后 The Empress",
+                uprightMeaning: "豐盛、滋養、母性、創造力。象徵富饒與生命力的蓬勃發展。",
+                reversedMeaning: "依賴、窒息的愛、創造力受阻。需要平衡給予與接受。",
+                symbol: "👑"
+            },
+            {
+                id: 4,
+                name: "皇帝 The Emperor",
+                uprightMeaning: "權威、結構、穩定、領導力。建立秩序與規則，負責任的領導。",
+                reversedMeaning: "專制、控制過度、缺乏彈性。需要更開放與包容的態度。",
+                symbol: "⚔️"
+            },
+            {
+                id: 5,
+                name: "教皇 The Hierophant",
+                uprightMeaning: "傳統、教導、信仰、道德規範。遵循既定的規則與價值觀。",
+                reversedMeaning: "叛逆、打破傳統、新的信念。質疑既有的規則與限制。",
+                symbol: "📿"
+            },
+            {
+                id: 6,
+                name: "戀人 The Lovers",
+                uprightMeaning: "愛情、和諧、選擇、價值觀一致。重要關係中的連結與選擇。",
+                reversedMeaning: "失衡、價值觀衝突、選擇困難。需要重新審視關係與決定。",
+                symbol: "💕"
+            },
+            {
+                id: 7,
+                name: "戰車 The Chariot",
+                uprightMeaning: "勝利、意志力、決心、前進。克服障礙，朝目標勇往直前。",
+                reversedMeaning: "失控、缺乏方向、侵略性。需要重新掌控方向與節奏。",
+                symbol: "🏇"
+            },
+            {
+                id: 8,
+                name: "力量 Strength",
+                uprightMeaning: "勇氣、耐心、溫柔的力量、自我控制。以愛與理解化解衝突。",
+                reversedMeaning: "自我懷疑、缺乏信心、內在衝突。需要重建內在力量。",
+                symbol: "🦁"
+            },
+            {
+                id: 9,
+                name: "隱士 The Hermit",
+                uprightMeaning: "內省、獨處、尋求真理、內在指引。透過沉思獲得智慧。",
+                reversedMeaning: "孤立、退縮、迷失方向。需要重新與外界連結。",
+                symbol: "🕯️"
+            },
+            {
+                id: 10,
+                name: "命運之輪 Wheel of Fortune",
+                uprightMeaning: "變化、循環、命運、好運。生命的起伏與轉變時刻。",
+                reversedMeaning: "厄運、抗拒變化、失控。接受變化是成長的一部分。",
+                symbol: "☸️"
+            },
+            {
+                id: 11,
+                name: "正義 Justice",
+                uprightMeaning: "公平、真相、因果、平衡。公正的判斷與決定。",
+                reversedMeaning: "不公、偏見、逃避責任。需要面對真相與後果。",
+                symbol: "⚖️"
+            },
+            {
+                id: 12,
+                name: "倒吊人 The Hanged Man",
+                uprightMeaning: "犧牲、換個角度、放手、等待。從新視角看待問題。",
+                reversedMeaning: "無意義的犧牲、拖延、抗拒。需要行動而非等待。",
+                symbol: "🙃"
+            },
+            {
+                id: 13,
+                name: "死神 Death",
+                uprightMeaning: "轉變、結束、新生、放下過去。重大轉變與新階段的開始。",
+                reversedMeaning: "抗拒改變、停滯、無法放手。需要接受變化與轉型。",
+                symbol: "🦋"
+            },
+            {
+                id: 14,
+                name: "節制 Temperance",
+                uprightMeaning: "平衡、和諧、適度、耐心。找到中庸之道，調和不同元素。",
+                reversedMeaning: "失衡、極端、不耐煩。需要重新找回內在平衡。",
+                symbol: "⚗️"
+            },
+            {
+                id: 15,
+                name: "惡魔 The Devil",
+                uprightMeaning: "束縛、成癮、物質主義、陰影。意識到限制與執著。",
+                reversedMeaning: "解放、掙脫束縛、覺醒。打破自我設限，重獲自由。",
+                symbol: "😈"
+            },
+            {
+                id: 16,
+                name: "塔 The Tower",
+                uprightMeaning: "突然的改變、崩塌、啟示、破壞重建。舊結構的瓦解。",
+                reversedMeaning: "逃避災難、抗拒改變、恐懼。需要面對必要的變革。",
+                symbol: "⚡"
+            },
+            {
+                id: 17,
+                name: "星星 The Star",
+                uprightMeaning: "希望、療癒、靈感、信念。在黑暗中看見光明與可能。",
+                reversedMeaning: "失去信心、絕望、缺乏靈感。需要重拾希望與信念。",
+                symbol: "⭐"
+            },
+            {
+                id: 18,
+                name: "月亮 The Moon",
+                uprightMeaning: "幻覺、潛意識、直覺、不確定性。探索內在的恐懼與夢想。",
+                reversedMeaning: "焦慮釋放、真相揭露、克服恐懼。逐漸看清事實。",
+                symbol: "🌜"
+            },
+            {
+                id: 19,
+                name: "太陽 The Sun",
+                uprightMeaning: "喜悅、成功、活力、正能量。充滿光明與積極的能量。",
+                reversedMeaning: "過度樂觀、延遲的成功、缺乏熱情。需要重新點燃熱情。",
+                symbol: "☀️"
+            },
+            {
+                id: 20,
+                name: "審判 Judgement",
+                uprightMeaning: "覺醒、重生、呼召、寬恕。重大的覺悟與內在呼喚。",
+                reversedMeaning: "自我懷疑、內疚、逃避評判。需要自我寬恕與接納。",
+                symbol: "📯"
+            },
+            {
+                id: 21,
+                name: "世界 The World",
+                uprightMeaning: "完成、成就、整合、圓滿。一個循環的完成與新旅程的開始。",
+                reversedMeaning: "未完成、缺少閉環、延遲。需要完成未竟之事。",
+                symbol: "🌍"
+            }
+        ];
+
+        // 主題建議資料庫
+        const topicAdvice = {
+            general: {
+                upright: "整體運勢正向發展，把握當下機會，相信自己的判斷。保持開放的心態迎接新的可能性。",
+                reversed: "目前可能面臨一些挑戰，需要調整心態或策略。這是一個反思與學習的時期，耐心面對困難。"
+            },
+            love: {
+                upright: "感情方面有正面發展，真誠表達感受，用心經營關係。單身者可能遇到特別的人。",
+                reversed: "感情需要更多溝通與理解，避免誤會累積。這是檢視關係品質的時機，誠實面對感受。"
+            },
+            career: {
+                upright: "工作上有好的發展機會，發揮專業能力，積極進取。適合展開新計劃或接受新挑戰。",
+                reversed: "工作可能遇到阻礙或需要調整方向。重新評估目標，必要時尋求建議或學習新技能。"
+            },
+            study: {
+                upright: "學習狀態良好，保持專注與努力會有好成果。適合探索新知識或深入研究。",
+                reversed: "學習上可能遇到困難或分心。調整學習方法，尋找適合自己的節奏，不要給自己過大壓力。"
+            },
+            money: {
+                upright: "財運穩定或有改善，理性理財，把握投資機會。收入可能有增加的可能性。",
+                reversed: "財務需要謹慎管理，避免衝動消費或高風險投資。這是重新檢視財務計劃的時機。"
+            }
+        };
+
+        // DOM 元素
+        const topicSelect = document.getElementById('topic');
+        const drawButton = document.getElementById('drawButton');
+        const resultArea = document.getElementById('resultArea');
+        const cardVisual = document.getElementById('cardVisual');
+        const cardName = document.getElementById('cardName');
+        const cardPosition = document.getElementById('cardPosition');
+        const meaningText = document.getElementById('meaningText');
+        const adviceText = document.getElementById('adviceText');
+        const resetButton = document.getElementById('resetButton');
+
+        // 抽牌功能
+        function drawCard() {
+            // 隨機選擇一張牌
+            const randomIndex = Math.floor(Math.random() * tarotCards.length);
+            const card = tarotCards[randomIndex];
+            
+            // 隨機決定正位或逆位（50/50）
+            const isReversed = Math.random() < 0.5;
+            
+            // 獲取選擇的主題
+            const topic = topicSelect.value;
+            
+            // 顯示結果
+            displayResult(card, isReversed, topic);
+        }
+
+        // 顯示抽牌結果
+        function displayResult(card, isReversed, topic) {
+            // 更新卡片視覺效果
+            cardVisual.textContent = card.symbol;
+            if (isReversed) {
+                cardVisual.classList.add('reversed');
+            } else {
+                cardVisual.classList.remove('reversed');
+            }
+
+            // 更新卡片名稱
+            cardName.textContent = card.name;
+
+            // 更新正逆位
+            cardPosition.textContent = isReversed ? '🔻 逆位 (Reversed)' : '🔺 正位 (Upright)';
+
+            // 更新牌義
+            meaningText.textContent = isReversed ? card.reversedMeaning : card.uprightMeaning;
+
+            // 更新主題建議
+            const advice = topicAdvice[topic];
+            adviceText.textContent = isReversed ? advice.reversed : advice.upright;
+
+            // 顯示結果區域
+            resultArea.classList.add('show');
+        }
+
+        // 重置功能
+        function resetResult() {
+            resultArea.classList.remove('show');
+        }
+
+        // 事件監聽
+        drawButton.addEventListener('click', drawCard);
+        resetButton.addEventListener('click', resetResult);
+    </script>
+</body>
+</html>
